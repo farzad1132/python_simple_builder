@@ -26,7 +26,8 @@ def check_type(func: Callable) -> Callable:
     
     return inner
 
-def rule(target: List[str], *dependencies: str):
+@check_type
+def rule(target: List[str], dependencies: str):
 
     def wrapper(func: Callable):
 
