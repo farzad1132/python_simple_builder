@@ -1,4 +1,4 @@
-from typing import Any, Callable, List
+from typing import Any, Callable, List, Tuple
 
 def check_type(func: Callable) -> Callable:
     # TODO: add args support
@@ -8,14 +8,25 @@ def check_type(func: Callable) -> Callable:
             if not key in func.__annotations__:
                 raise Exception(f"kwarg '{key}' not defined")
             
-            if not isinstance(value, func.__annotations__[key]):
-                raise Exception(f"parameter '{key}' has wrong value type [must be '{func.__annotations__[key]}']")
+            type = func.__annotations__[key]
+            # TODO: add dictionary support
+            if type.__origin__ in (list, tuple):
+                if not isinstance(value, type.__origin__):
+                    raise Exception(f"parameter '{key}' has wrong value type [must be '{type.__origin__}']")
+                
+                arg_type = type.__args__[0]
+                for item in value:
+                    if not isinstance(item, arg_type):
+                        raise Exception(f"value '{item}' must be '{arg_type}'")
+            
+            elif not isinstance(value, type):
+                raise Exception(f"parameter '{key}' has wrong value type [must be '{type}']")
             
         func(**kwargs)
     
     return inner
 
-def rule(target: List, *dependencies: str):
+def rule(target: List[str], *dependencies: str):
 
     def wrapper(func: Callable):
 
